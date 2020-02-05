@@ -239,17 +239,17 @@ func main() {
 
 	appKey := os.Getenv("APPKEY")
 	if appKey == "" {
-		appKey = "121e87d73077403eadd9ab4fec2d9973"
+		appKey = "75ba120532f44aa7a8cd431a2c2a50ef"
 	}
 
 	secKey := os.Getenv("SECKEY")
 	if secKey == "" {
-		secKey = "95319779d4af58272619f612f7fa1156"
+		secKey = "64ebce4ce9b540bf85b5f09093a8eeff"
 	}
 
 	wxAppID := os.Getenv("WXAPPID")
 	if wxAppID == "" {
-		wxAppID = "wx787a08bcd2904b06"
+		wxAppID = ""
 	}
 
 	useSandbox := true
