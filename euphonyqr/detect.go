@@ -18,34 +18,34 @@ type DemoDetectResult struct {
 
 type EuphonyQRDetectRequestParam struct {
 	Version   int32  `json:"version"`
-	RequestID string `json:"request_id"`
+	RequestID string `json:"request_id,omitempty"`
 	Appkey    string `json:"appkey"`
 	Seckey    string `json:"seckey"`
-	Test      bool   `json:"test"`
-	IP        string `json:"ip"`
-	UserAgent string `json:"user_agent"`
-	Language  string `json:"language"`
+	Test      bool   `json:"test,omitempty"`
+	IP        string `json:"ip,omitempty"`
+	UserAgent string `json:"user_agent,omitempty"`
+	Language  string `json:"language,omitempty"`
 	App       struct {
 		AppName     string `json:"app_name"`
 		PackageName string `json:"package_name"`
 		Platform    string `json:"platform"`
 	} `json:"App"`
 	Device struct {
-		OS         string `json:"os"`
-		OSVersion  string `json:"osv"`
-		DeviceType string `json:"device_type"`
-		Brand      string `json:"brand"`
-		Operator   string `json:"operator"`
-		Network    string `json:"network"`
-		Longtitude string `json:"lon"`
-		Latitude   string `json:"lat"`
 		DeviceID   string `json:"device_id"`
-		MAC        string `json:"mac"`
+		OS         string `json:"os,omitempty"`
+		OSVersion  string `json:"osv,omitempty"`
+		DeviceType string `json:"device_type,omitempty"`
+		Brand      string `json:"brand,omitempty"`
+		Operator   string `json:"operator,omitempty"`
+		Network    string `json:"network,omitempty"`
+		Longtitude string `json:"lon,omitempty"`
+		Latitude   string `json:"lat,omitempty"`
+		MAC        string `json:"mac,omitempty"`
 	} `json:"Device"`
 	User struct {
-		UserID    string `json:"user_id"`
-		WXOpenID  string `json:"wx_open_id"`
-		WXUnionID string `json:"wx_union_id"`
+		UserID    string `json:"user_id,omitempty"`
+		WXOpenID  string `json:"wx_open_id,omitempty"`
+		WXUnionID string `json:"wx_union_id,omitempty"`
 	} `json:"User"`
 }
 
@@ -82,6 +82,7 @@ func FetchHandler(rw http.ResponseWriter, req *http.Request) {
 		if IP == "" {
 			IP = strings.Split(req.RemoteAddr, ":")[0]
 		}
+		UA := req.Header.Get("User-Agent")
 		wxresult := DemoDetectResult{}
 		wxresult.Tags = make([]string, 0)
 
@@ -94,7 +95,7 @@ func FetchHandler(rw http.ResponseWriter, req *http.Request) {
 				//检查微信小程序APPID
 				wxresult.Message = "Error2"
 			} else {
-				result, err := FetchDetectInfo(url, appkey, token.Seckey, token.UseSandbox, platform, deviceID, IP)
+				result, err := FetchDetectInfo(url, appkey, token.Seckey, token.UseSandbox, platform, deviceID, IP, UA)
 				if err != nil {
 					// println(err.Error())
 					wxresult.Message = "Error3"
@@ -125,26 +126,30 @@ func FetchHandler(rw http.ResponseWriter, req *http.Request) {
 //FetchInfo 获取动听服务器的解析结果
 //参数appkey,seckey从动听后台中获得
 //useSandbox说明APPKEY是否是sandbox.euphonyqr.com
-func FetchDetectInfo(fetchurl string, appkey string, seckey string, useSandbox bool, platform string, deviceID string, IP string) (detectResult *EuphonyQRDetectResult, err error) {
+func FetchDetectInfo(fetchurl string, appkey string, seckey string, useSandbox bool, platform string, deviceID string, IP string, UA string) (detectResult *EuphonyQRDetectResult, err error) {
 	requireParams := EuphonyQRDetectRequestParam{}
 	requireParams.Version = 1
 	requireParams.Appkey = appkey
 	requireParams.Seckey = seckey
 	requireParams.Test = useSandbox
-	requireParams.RequestID = "" //此ID可用于查询日志，请自行设置，确保唯一，如果不用请置空
+	requireParams.RequestID = "please set a unique id" //此ID可用于查询日志，请自行设置，确保唯一，如果不用请置空
 	requireParams.IP = IP
+	requireParams.UserAgent = UA
 
 	requireParams.App.Platform = platform // ios或android或wx_app
 	requireParams.App.AppName = "demo_app"
+	requireParams.Device.DeviceID = deviceID
 	if platform == "ios" {
 		requireParams.App.PackageName = "package name of your app"
-		requireParams.Device.DeviceID = deviceID
 	} else if platform == "android" {
 		requireParams.App.PackageName = "bundle id of your app"
-		requireParams.Device.DeviceID = deviceID
 	} else if platform == "wx_app" {
 		requireParams.App.PackageName = "wx70bcdd12873c3cb1"
 	}
+
+	requireParams.User.UserID = "please give a custom user id"
+	requireParams.User.WXOpenID = "please give a custom user id"
+	requireParams.User.WXUnionID = "please give a custom user id"
 
 	jsonStr, _ := json.Marshal(&requireParams)
 	// println("fetch url: " + fetchurl)
